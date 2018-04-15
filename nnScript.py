@@ -225,39 +225,22 @@ def nnObjFunction(params, *args):
     obj_grad = np.array([])
     
     #Gradient with respect to weight from hidden layer to output layer (w2)
-#    constant = 1/n
-#    grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
-#    delta_l = np.subtract(o,y) #50000x10 - 50000x10
-#    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
-#    #grad_w2 = grad_w2 + (lambdaval*w2)
-#    grad_w2 = ((lambdaval*w2)/training_data.shape[0])+grad_w2
-#    grad_w2 = constant*grad_w2
-#    
-#    #Gradient with respect to weight from input layer to hidden layer (w1)
-#    grad_w1=np.zeros(w1.shape,dtype=np.float64) 
-#    temp1 = ((1-o[:,0:n_hidden])*o[:,0:n_hidden])
-#    temp2 = np.dot(delta_l,w2[:,0:n_hidden])
-#    delta_j = temp1*temp2 
-#    grad_w1 = np.dot(delta_j.transpose(),training_data)
-#    grad_w1 = grad_w1 + (lambdaval*w1)
-#    grad_w1 = constant*grad_w1
+    constant = 1/n
+    grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
+    delta_l = np.subtract(o,y) #50000x10 - 50000x10
+    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
+    grad_w2 = grad_w2 + (lambdaval*w2)
+    grad_w2 = constant*grad_w2
     
-    # Gradient - w2 
-
-    grad_w2=np.zeros(w2.shape,dtype=np.float64) #10x51
-    delta_l=np.subtract(o,y) #50000x10 - 50000x10
-    grad_w2=(1.0/(training_data.shape[0]))*np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
-    grad_w2 = ((lambdaval*w2)/training_data.shape[0])+grad_w2
-
-# Gradient - w1
-
+    #Gradient with respect to weight from input layer to hidden layer (w1)
     grad_w1=np.zeros(w1.shape,dtype=np.float64) 
-    sigmul=((1-z[:,0:n_hidden])*z[:,0:n_hidden])
-    del_w1=np.dot(delta_l,w2[:,0:n_hidden])
-    mult=sigmul*del_w1 
-    grad_w1=(1.0/(training_data.shape[0]))*np.dot(mult.transpose(),training_data)
-    grad_w1 = ((lambdaval*w1)/training_data.shape[0])+grad_w1
-    
+    temp1 = ((1-z[:,0:n_hidden])*z[:,0:n_hidden])
+    temp2 = np.dot(delta_l,w2[:,0:n_hidden])
+    delta_j = temp1*temp2 
+    grad_w1 = np.dot(delta_j.transpose(),training_data)
+    grad_w1 = grad_w1 + (lambdaval*w1)
+    grad_w1 = constant*grad_w1
+
     obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     print(obj_val)
     return (obj_val, obj_grad)
