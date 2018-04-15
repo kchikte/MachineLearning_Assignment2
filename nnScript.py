@@ -183,14 +183,66 @@ def nnObjFunction(params, *args):
     #
     #
     #
+    n = training_data.shape[0] #no. of inputs
+    w1_transpose = w1.transpose()
+    w2_transpose = w2.transpose()
+    trainingData_bias = np.ones((training_data.shape[0],1),dtype = np.float64)
+    
+    training_data = np.concatenate((training_data, trainingData_bias), axis = 1) #Add bias term for input
+    a = np.dot(training_data,w1_transpose)
+    z = sigmoid(a)      #output from hidden layer
 
+    hiddenInput_bias = np.ones((z.shape[0],1),dtype = np.float64)
+    hiddenInput = np.concatenate((z, hiddenInput_bias),axis=1)
+    b = np.dot(hiddenInput,w2_transpose)
+    o = sigmoid(b)                   # output: 50000x10
+    print(o)
+    
+    #1 to k encoding of training labels
+    y = np.zeros(o.shape, dtype = np.float64)  #creates a vector of 50000*10
+    for i in range(y.shape[0]):   
+      for j in range(y.shape[1]):
+        if j==training_label[i]:
+          y[i][j] = 1.0             #set the class labeled value to 1 and rest to 0
+    
+    #Error Function (eq. 5)
+    temp1 = y*np.log(o)        
+    temp2 = (1.0-y)*np.log(1.0-o)
+    sum = temp1 + temp2
+    r=np.sum(sum)
+    obj_val = (-1.0/n) * r
 
-
+    #Regularized error function (eq. 15)
+    temp1 = np.sum(np.sum(np.square(w1),axis=1),axis=0)
+    temp2 = np.sum(np.sum(np.square(w2),axis=1),axis=0)
+    temp3 =temp1 + temp2
+    regularized_error = (lambdaval/(2*n))*temp3
+    obj_val=obj_val+regularized_error   
+    
     # Make sure you reshape the gradient matrices to a 1D array. for instance if your gradient matrices are grad_w1 and grad_w2
     # you would use code similar to the one below to create a flat array
     # obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     obj_grad = np.array([])
+    
+    #Gradient with respect to weight from hidden layer to output layer (w2)
+    constant = 1/n
+    grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
+    delta_l = np.subtract(o,y) #50000x10 - 50000x10
+    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
+    grad_w2 = grad_w2 + (lambdaval*w2)
+    grad_w2 = constant*grad_w2
+    
+    #Gradient with respect to weight from input layer to hidden layer (w1)
+    grad_w1=np.zeros(w1.shape,dtype=np.float64) 
+    temp1 = ((1-z[:,0:n_hidden])*z[:,0:n_hidden])
+    temp2 = np.dot(delta_l,w2[:,0:n_hidden])
+    delta_j = temp1*temp2 
+    grad_w1 = np.dot(delta_j.transpose(),training_data)
+    grad_w1 = grad_w1 + (lambdaval*w1)
+    grad_w1 = constant*grad_w1
 
+    obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
+    print(obj_val)
     return (obj_val, obj_grad)
 
 
@@ -213,7 +265,7 @@ def nnPredict(w1, w2, data):
 
     #labels = np.array([])
     # Your code here
-    ones_vector = np.ones((len(data),1)) #all ones vector 
+    ones_vector = np.ones((data.shape[0],1)) #all ones vector 
     
     w1_transpose = w1.transpose()
     w2_transpose = w2.transpose()
@@ -289,16 +341,16 @@ predicted_label = nnPredict(w1, w2, train_data)
 
 # find the accuracy on Training Dataset
 
-print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
+#print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
 
 predicted_label = nnPredict(w1, w2, validation_data)
 
 # find the accuracy on Validation Dataset
 
-print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
+#print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
 
 predicted_label = nnPredict(w1, w2, test_data)
 
 # find the accuracy on Validation Dataset
 
-print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+#print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
