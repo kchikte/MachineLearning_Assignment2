@@ -174,7 +174,7 @@ def nnObjFunction(params, *args):
 
     w1 = params[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
     w2 = params[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
-    print('w2:',training_data.shape)
+    print('w2:',w2.shape)
     obj_val = 0
 
     # Your code here
@@ -186,15 +186,18 @@ def nnObjFunction(params, *args):
     n = training_data.shape[0] #no. of inputs
     w1_transpose = w1.transpose()
     w2_transpose = w2.transpose()
-    trainingData_bias = np.ones((training_data.shape[0],1),dtype = np.float64)
-    
+    trainingData_bias = np.ones(shape=(training_data.shape[0],1),dtype = np.float64)
+       
     training_data = np.concatenate((training_data, trainingData_bias), axis = 1) #Add bias term for input
     a = np.dot(training_data,w1_transpose)
+    print('shape w1:',w1.shape)
     z = sigmoid(a)      #output from hidden layer
+    print('shape z:',z.shape)
     
-    hiddenInput_bias = np.ones((z.shape[0],1),dtype = np.float64)
-    hiddenInput = np.concatenate((z, hiddenInput_bias),axis=1)
-    b = np.dot(hiddenInput,w2_transpose)
+    hiddenInput_bias = np.ones(shape=(z.shape[0],1),dtype = np.float64)
+    z = np.concatenate((z, hiddenInput_bias),axis=1)
+    b = np.dot(z,w2_transpose)
+    print('shape w2:',w2.shape)
     o = sigmoid(b)                   # output: 50000x10
     print(o)
     
@@ -204,7 +207,7 @@ def nnObjFunction(params, *args):
       for j in range(y.shape[1]):
         if j==training_label[i]:
           y[i][j] = 1.0             #set the class labeled value to 1 and rest to 0
-    
+      
     #Error Function (eq. 5)
     temp1 = y*np.log(o)        
     temp2 = (1.0-y)*np.log(1.0-o)
@@ -218,7 +221,7 @@ def nnObjFunction(params, *args):
     temp3 =temp1 + temp2
     regularized_error = (lambdaval/(2*n))*temp3
     obj_val=obj_val+regularized_error   
-    
+   
     # Make sure you reshape the gradient matrices to a 1D array. for instance if your gradient matrices are grad_w1 and grad_w2
     # you would use code similar to the one below to create a flat array
     # obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
@@ -228,12 +231,9 @@ def nnObjFunction(params, *args):
     constant = 1/n
     grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
     delta_l = np.subtract(o,y) #50000x10 - 50000x10
-#    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
-#    grad_w2 = (lambdaval*w2) + grad_w2
-#    grad_w2 = constant*grad_w2
     grad_w2=(1.0/(training_data.shape[0]))*np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
     print('shape:',z.shape)
-    
+    print('shape w2:',w2.shape)
     grad_w2 = ((lambdaval*w2)/training_data.shape[0])+grad_w2
     
     #Gradient with respect to weight from input layer to hidden layer (w1)
@@ -248,7 +248,6 @@ def nnObjFunction(params, *args):
     obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
     print(obj_val)
     return (obj_val, obj_grad)
-
 
 def nnPredict(w1, w2, data):
     """% nnPredict predicts the label of data given the parameter w1, w2 of Neural
@@ -312,7 +311,7 @@ n_class = 10
 # initialize the weights into some random matrices
 initial_w1 = initializeWeights(n_input, n_hidden)
 initial_w2 = initializeWeights(n_hidden, n_class)
-
+print('n_hidden',n_hidden)
 w1 = initializeWeights(n_input, n_hidden)
 w2 = initializeWeights(n_hidden, n_class)
 
@@ -336,8 +335,8 @@ nn_params = minimize(nnObjFunction, initialWeights, jac=True, args=args, method=
 
 
 # Reshape nnParams from 1D vector into w1 and w2 matrices
-w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
-w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
+#w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
+#w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
 
 # Test the computed parameters
 
