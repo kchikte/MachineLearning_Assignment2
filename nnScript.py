@@ -185,7 +185,6 @@ def nnObjFunction(params, *args):
 
     w1 = params[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
     w2 = params[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
-    print('w2:',w2.shape)
     obj_val = 0
 
     # Your code here
@@ -201,16 +200,12 @@ def nnObjFunction(params, *args):
        
     training_data = np.concatenate((training_data, trainingData_bias), axis = 1) #Add bias term for input
     a = np.dot(training_data,w1_transpose)
-    print('shape w1:',w1.shape)
     z = sigmoid(a)      #output from hidden layer
-    print('shape z:',z.shape)
     
     hiddenInput_bias = np.ones(shape=(z.shape[0],1),dtype = np.float64)
     z = np.concatenate((z, hiddenInput_bias),axis=1)
     b = np.dot(z,w2_transpose)
-    print('shape w2:',w2.shape)
     o = sigmoid(b)                   # output: 50000x10
-    print(o)
     
     #1 to k encoding of training labels
     y = np.zeros(o.shape, dtype = np.float64)  #creates a vector of 50000*10
@@ -243,8 +238,6 @@ def nnObjFunction(params, *args):
     grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
     delta_l = np.subtract(o,y) #50000x10 - 50000x10
     grad_w2=(1.0/(training_data.shape[0]))*np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
-    print('shape:',z.shape)
-    print('shape w2:',w2.shape)
     grad_w2 = ((lambdaval*w2)/training_data.shape[0])+grad_w2
     
     #Gradient with respect to weight from input layer to hidden layer (w1)
@@ -277,30 +270,21 @@ def nnPredict(w1, w2, data):
     % Output: 
     % label: a column vector of predicted labels"""
 
-    #labels = np.array([])
+    labels = np.array([])
     # Your code here
-    ones_vector = np.ones((data.shape[0],1)) #all ones vector 
-    
     w1_transpose = w1.transpose()
     w2_transpose = w2.transpose()
-    
-    x = np.concatenate((data,ones_vector),axis=1) #Adding bias term to input
+   
+    training_bias = np.ones(shape=(data.shape[0],1)) #all ones vector
+    x = np.concatenate((data,training_bias),axis=1) #Adding bias term to input
     a = np.dot(x,w1_transpose)
     z = sigmoid(a)  #output of hidden layer
     
-    temp = np.concatenate((z,ones_vector),axis=1) #Adding bias term to output of hidden layer
-    b = np.dot(temp,w2_transpose)
-    #v = sigmoid(b)  #output
-   
-    true_labels = np.array([0,1,2,3,4,5,6,7,8,9])
-    temp1 = np.dot(b,true_labels)
-#    if temp1.shape()==50000:
-    if len(temp1)==50000 :
-        labels = temp1.reshape(50000,1)
-    else:
-        labels = temp1.reshape(10000,1)
-    print('labels:',labels)
-    
+    hidden_bias = np.ones(shape=(z.shape[0],1))
+    z = np.concatenate((z,hidden_bias),axis=1) #Adding bias term to output of hidden layer
+    b = np.dot(z,w2_transpose)
+    o = sigmoid(b)  #output
+    labels = np.argmax(o, axis = 1)
     return labels
 
 
@@ -322,7 +306,6 @@ n_class = 10
 # initialize the weights into some random matrices
 initial_w1 = initializeWeights(n_input, n_hidden)
 initial_w2 = initializeWeights(n_hidden, n_class)
-print('n_hidden',n_hidden)
 w1 = initializeWeights(n_input, n_hidden)
 w2 = initializeWeights(n_hidden, n_class)
 
