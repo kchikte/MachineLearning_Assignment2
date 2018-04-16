@@ -293,37 +293,40 @@ def nnPredict(w1, w2, data):
 train_data, train_label, validation_data, validation_label, test_data, test_label = preprocess()
 
 #  Train Neural Network
-
+train_time = []
+tr_acc = []
+val_acc = []
+tst_acc = []
 # set the number of nodes in input unit (not including bias unit)
 n_input = train_data.shape[1]
 
 # set the number of nodes in hidden unit (not including bias unit)
+hidden_units_set = [50,60,70,80]
 n_hidden = 50
-
-# set the number of nodes in output unit
-n_class = 10
-
-# initialize the weights into some random matrices
-initial_w1 = initializeWeights(n_input, n_hidden)
-initial_w2 = initializeWeights(n_hidden, n_class)
-w1 = initializeWeights(n_input, n_hidden)
-w2 = initializeWeights(n_hidden, n_class)
-
-# unroll 2 weight matrices into single column vector
-initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
-
-# set the regularization hyper-parameter
-lambdaval = 0
-lambda_set = [0,4,8,12,16,20]  # initializing a lambda array to test regularization with various lambda values
-tr_acc = []
-val_acc = []
-tst_acc = []
-train_time = []
-for lamb in lambda_set:  # looping through recommended lambda values
-    lambdaval = lamb
-    args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
+for n_units in hidden_units_set:
+    # set the number of nodes in output unit
+    n_class = 10
+    n_hidden = n_units
     start_time=datetime.datetime.now()  # Starting timer to calculate the training time
+    # initialize the weights into some random matrices
+
+    initial_w1 = initializeWeights(n_input, n_hidden)
+    initial_w2 = initializeWeights(n_hidden, n_class)
+    w1 = initializeWeights(n_input, n_hidden)
+    w2 = initializeWeights(n_hidden, n_class)
+
+    # unroll 2 weight matrices into single column vector
+    initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
+
+    # set the regularization hyper-parameter
+    lambdaval = 8 # optimal lambda 
+    #lambda_set = [0,4,8,12,16,20]  # initializing a lambda array to test regularization with various lambda values
+
+    #for lamb in lambda_set:  # looping through recommended lambda values
+    #lambdaval = lamb
+    args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
     
+
     # Train Neural Network using fmin_cg or minimize from scipy,optimize module. Check documentation for a working example
 
     opts = {'maxiter': 50}  # Preferred value.
