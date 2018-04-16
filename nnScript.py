@@ -127,7 +127,6 @@ def preprocess():
     # Feature selection
     # Your code here.
     
-    
     print('preprocess done')
 
     return train_data, train_label, validation_data, validation_label, test_data, test_label
@@ -175,6 +174,7 @@ def nnObjFunction(params, *args):
 
     w1 = params[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
     w2 = params[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
+    print('w2:',training_data.shape)
     obj_val = 0
 
     # Your code here
@@ -191,7 +191,7 @@ def nnObjFunction(params, *args):
     training_data = np.concatenate((training_data, trainingData_bias), axis = 1) #Add bias term for input
     a = np.dot(training_data,w1_transpose)
     z = sigmoid(a)      #output from hidden layer
-
+    
     hiddenInput_bias = np.ones((z.shape[0],1),dtype = np.float64)
     hiddenInput = np.concatenate((z, hiddenInput_bias),axis=1)
     b = np.dot(hiddenInput,w2_transpose)
@@ -228,9 +228,13 @@ def nnObjFunction(params, *args):
     constant = 1/n
     grad_w2 = np.zeros(w2.shape,dtype=np.float64) #10xn
     delta_l = np.subtract(o,y) #50000x10 - 50000x10
-    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
-    grad_w2 = grad_w2 + (lambdaval*w2)
-    grad_w2 = constant*grad_w2
+#    grad_w2=np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
+#    grad_w2 = (lambdaval*w2) + grad_w2
+#    grad_w2 = constant*grad_w2
+    grad_w2=(1.0/(training_data.shape[0]))*np.dot(delta_l.transpose(),z) #10x50000 * 50000x51 
+    print('shape:',z.shape)
+    
+    grad_w2 = ((lambdaval*w2)/training_data.shape[0])+grad_w2
     
     #Gradient with respect to weight from input layer to hidden layer (w1)
     grad_w1=np.zeros(w1.shape,dtype=np.float64) 
