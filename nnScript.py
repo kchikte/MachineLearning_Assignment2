@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.io import loadmat
 from math import sqrt
+import datetime
 
 
 def initializeWeights(n_in, n_out):
@@ -250,7 +251,6 @@ def nnObjFunction(params, *args):
     grad_w1 = constant*grad_w1
 
     obj_grad = np.concatenate((grad_w1.flatten(), grad_w2.flatten()),0)
-    print(obj_val)
     return (obj_val, obj_grad)
 
 def nnPredict(w1, w2, data):
@@ -314,40 +314,55 @@ initialWeights = np.concatenate((initial_w1.flatten(), initial_w2.flatten()), 0)
 
 # set the regularization hyper-parameter
 lambdaval = 0
+lambda_set = [0,4,8,12,16,20]  # initializing a lambda array to test regularization with various lambda values
+tr_acc = []
+val_acc = []
+tst_acc = []
+train_time = []
+for lamb in lambda_set:  # looping through recommended lambda values
+    lambdaval = lamb
+    args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
+    start_time=datetime.datetime.now()  # Starting timer to calculate the training time
+    
+    # Train Neural Network using fmin_cg or minimize from scipy,optimize module. Check documentation for a working example
 
-args = (n_input, n_hidden, n_class, train_data, train_label, lambdaval)
+    opts = {'maxiter': 50}  # Preferred value.
 
-# Train Neural Network using fmin_cg or minimize from scipy,optimize module. Check documentation for a working example
+    nn_params = minimize(nnObjFunction, initialWeights, jac=True, args=args, method='CG', options=opts)
+    end_time=datetime.datetime.now() # Ending timer to calculate the training time
+    time_diff=end_time-start_time
+    micro_sec = time_diff.seconds*1000000+time_diff.microseconds
+    train_time.append(micro_sec)
+    # In Case you want to use fmin_cg, you may have to split the nnObjectFunction to two functions nnObjFunctionVal
+    # and nnObjGradient. Check documentation for this function before you proceed.
+    # nn_params, cost = fmin_cg(nnObjFunctionVal, initialWeights, nnObjGradient,args = args, maxiter = 50)
 
-opts = {'maxiter': 50}  # Preferred value.
 
-nn_params = minimize(nnObjFunction, initialWeights, jac=True, args=args, method='CG', options=opts)
+    # Reshape nnParams from 1D vector into w1 and w2 matrices
+    w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
+    w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
 
-# In Case you want to use fmin_cg, you may have to split the nnObjectFunction to two functions nnObjFunctionVal
-# and nnObjGradient. Check documentation for this function before you proceed.
-# nn_params, cost = fmin_cg(nnObjFunctionVal, initialWeights, nnObjGradient,args = args, maxiter = 50)
+    # Test the computed parameters
 
+    predicted_label = nnPredict(w1, w2, train_data)
 
-# Reshape nnParams from 1D vector into w1 and w2 matrices
-w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
-w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
+    # find the accuracy on Training Dataset
+    tr_acc.append(100 * np.mean((predicted_label == train_label).astype(float)))
+    print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
 
-# Test the computed parameters
+    predicted_label = nnPredict(w1, w2, validation_data)
 
-predicted_label = nnPredict(w1, w2, train_data)
+    # find the accuracy on Validation Dataset
+    val_acc.append(np.mean((predicted_label == validation_label).astype(float)))
+    print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
 
-# find the accuracy on Training Dataset
+    predicted_label = nnPredict(w1, w2, test_data)
 
-print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
-
-predicted_label = nnPredict(w1, w2, validation_data)
-
-# find the accuracy on Validation Dataset
-
-print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
-
-predicted_label = nnPredict(w1, w2, test_data)
-
-# find the accuracy on Validation Dataset
-
-print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+    # find the accuracy on Validation Dataset
+    tst_acc.append(100 * np.mean((predicted_label == test_label).astype(float)))
+    print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+    
+print("Train Accuracy : "+repr(tr_acc))
+print("Validation Accuracy : "+repr(val_acc))
+print("Test Accuracy : "+repr(tst_acc))
+print("Train Time : "+repr(train_time))
