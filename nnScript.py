@@ -126,7 +126,17 @@ def preprocess():
 
     # Feature selection
     # Your code here.
-    
+    tot_data = np.vstack((train_data,validation_data,test_data))  # combining train, validation and test 
+    ftr_indices=np.all(tot_data == tot_data[0,:], axis = 0)
+    fltrd_data = tot_data[:,~ftr_indices] # removing columns which are similar to the first one by performing shift operations on false columns
+     
+    tr_len = len(train_data)
+    va_len = len(validation_data)
+    tst_len = len(test_data)
+
+    train_data = fltrd_data[0:tr_len,:]  # separating train data from the filtered data
+    validation_data = fltrd_data[tr_len: (tr_len + va_len),:] # separating validation data from the filtered data
+    test_data = fltrd_data[(tr_len + va_len): (tr_len + va_len + tst_len),:] # separating test data from the filtered data
     
     print('preprocess done')
 
