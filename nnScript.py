@@ -266,30 +266,21 @@ def nnPredict(w1, w2, data):
     % Output: 
     % label: a column vector of predicted labels"""
 
-    #labels = np.array([])
+    labels = np.array([])
     # Your code here
-    ones_vector = np.ones((data.shape[0],1)) #all ones vector 
-    
     w1_transpose = w1.transpose()
     w2_transpose = w2.transpose()
-    
-    x = np.concatenate((data,ones_vector),axis=1) #Adding bias term to input
+   
+    training_bias = np.ones(shape=(data.shape[0],1)) #all ones vector
+    x = np.concatenate((data,training_bias),axis=1) #Adding bias term to input
     a = np.dot(x,w1_transpose)
     z = sigmoid(a)  #output of hidden layer
     
-    temp = np.concatenate((z,ones_vector),axis=1) #Adding bias term to output of hidden layer
-    b = np.dot(temp,w2_transpose)
-    #v = sigmoid(b)  #output
-   
-    true_labels = np.array([0,1,2,3,4,5,6,7,8,9])
-    temp1 = np.dot(b,true_labels)
-#    if temp1.shape()==50000:
-    if len(temp1)==50000 :
-        labels = temp1.reshape(50000,1)
-    else:
-        labels = temp1.reshape(10000,1)
-    print('labels:',labels)
-    
+    hidden_bias = np.ones(shape=(z.shape[0],1))
+    z = np.concatenate((z,hidden_bias),axis=1) #Adding bias term to output of hidden layer
+    b = np.dot(z,w2_transpose)
+    o = sigmoid(b)  #output
+    labels = np.argmax(o, axis = 1)
     return labels
 
 
@@ -335,8 +326,8 @@ nn_params = minimize(nnObjFunction, initialWeights, jac=True, args=args, method=
 
 
 # Reshape nnParams from 1D vector into w1 and w2 matrices
-#w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
-#w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
+w1 = nn_params.x[0:n_hidden * (n_input + 1)].reshape((n_hidden, (n_input + 1)))
+w2 = nn_params.x[(n_hidden * (n_input + 1)):].reshape((n_class, (n_hidden + 1)))
 
 # Test the computed parameters
 
@@ -344,16 +335,16 @@ predicted_label = nnPredict(w1, w2, train_data)
 
 # find the accuracy on Training Dataset
 
-#print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
+print('\n Training set Accuracy:' + str(100 * np.mean((predicted_label == train_label).astype(float))) + '%')
 
 predicted_label = nnPredict(w1, w2, validation_data)
 
 # find the accuracy on Validation Dataset
 
-#print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
+print('\n Validation set Accuracy:' + str(100 * np.mean((predicted_label == validation_label).astype(float))) + '%')
 
 predicted_label = nnPredict(w1, w2, test_data)
 
 # find the accuracy on Validation Dataset
 
-#print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
+print('\n Test set Accuracy:' + str(100 * np.mean((predicted_label == test_label).astype(float))) + '%')
