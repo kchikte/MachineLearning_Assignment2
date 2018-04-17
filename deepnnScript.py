@@ -5,7 +5,7 @@ Comparing single layer MLP with deep MLP (using TensorFlow)
 import tensorflow as tf
 import numpy as np
 import pickle
-
+import time
 
 # Create model
 # Add more hidden layers to create deeper networks
@@ -86,6 +86,7 @@ init = tf.global_variables_initializer()
 # load data
 train_features, train_labels, valid_features, valid_labels, test_features, test_labels = preprocess()
 # Launch the graph
+start_time = time.time()
 with tf.Session() as sess:
     sess.run(init)
 
@@ -101,6 +102,7 @@ with tf.Session() as sess:
             # Compute average loss
             avg_cost += c / total_batch
     print("Optimization Finished!")
+    print("%s Obtained time:" % (time.time() - start_time))
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print("Accuracy:", accuracy.eval({x: test_features, y: test_labels}))
